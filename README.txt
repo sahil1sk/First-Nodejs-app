@@ -12,6 +12,6 @@ express conFusionServer
  	using the given command:-
 	npm install
 
-# --> Then just normally type npm start you will see your server is start and up 
+# --> Then just normally type (npm start) you will see your server is start and up 
 	and running
 

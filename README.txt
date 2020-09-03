@@ -15,3 +15,10 @@ express conFusionServer
 # --> Then just normally type (npm start) you will see your server is start and up 
 	and running
 
+==> Installation More
+// mongoose will help to interact with mongoDB and also provide 
+// schema model for set the data in structured form
+npm install mongoose@5.1.7 --save // for using mongoose ODM 
+
+// for using mongoose currency (mongocurrency will help to store the currecy value)
+npm install mongoose-currency@0.2.0 --save  

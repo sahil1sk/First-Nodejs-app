@@ -10,6 +10,21 @@ var dishRouter = require('./routes/dishRouter'); // importing the dish router mo
 var leaderRouter = require('./routes/leaderRouter');
 var promotionRouter = require('./routes/promotionRouter');
 
+// Getting the mongoose ODM 
+const mongoose = require('mongoose');
+const Dishes = require('./models/dishes'); // get the dishes model which we make using schemas
+
+const url = 'mongodb://localhost:27017/conFusion';
+const connect = mongoose.connect(url);
+
+// connecting the mongodb server
+connect.then((db) => {
+  console.log("Connected correctly to the server");
+
+}, (err) => { console.log("Error is: ", err); }); 
+// this is the another way of showing the error instead of using catch
+
+
 var app = express();
 
 // view engine setup

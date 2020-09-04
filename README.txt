@@ -1,7 +1,7 @@
  ---- WE USE EXPRESS GENERATOR FOR MAKING THIS FOLDER ----
 
 # First we need to instll the express generator
-Express Generator:- Quicky scaffolding tool to generate an express skeleton
+Express Generator:- Quicky scaffolding tool to generate an express skeleton (helps to generate quick skelton)
 Installing Express generator
 npm install express-generator -g  // this is for installing globaly
 
@@ -14,6 +14,8 @@ express conFusionServer
 
 # --> Then just normally type (npm start) you will see your server is start and up 
 	and running
+
+==> Understanding With Mongo
 
 ==> Installation More
 // mongoose will help to interact with mongoDB and also provide 

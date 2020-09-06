@@ -27,4 +27,9 @@ npm install mongoose-currency@0.2.0 --save
 
 // in express generator cookie parsor is comming with it for install it on express normally use given command
  npm install cookie-parser@1.4.3 --save
- 
+
+// so here we are intall express session
+npm install express-session@1.15.6 --save
+// so here we are installing express file store for storing the info of the express sessions
+npm install session-file-store@1.2.0 --save
+

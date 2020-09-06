@@ -3,6 +3,8 @@ var express = require('express');               // importing express to use the 
 var path = require('path');                     // importing path for use path for serving static files
 var cookieParser = require('cookie-parser');   // cookie-parser is helps to read the cookie
 var logger = require('morgan');               // morgan helps to console log the data 
+var session  = require('express-session');    // so here we are importing the sesion parser
+var FileStore = require('session-file-store')(session)  // so here we are getting file storage for storing data of sessions
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -37,7 +39,16 @@ app.use(express.urlencoded({ extended: false }));
 
 // so here we are using cookie-parser by default and in this we will pass the secret-key
 // so we will pass the fake secret id because this will help to encrypt the data which is comming through signed cookie
-app.use(cookieParser('12345-67890-09876-54321'));  
+//app.use(cookieParser('12345-67890-09876-54321'));  
+// so here we comment the cookie parser because in place of cookie parser we are now using sessions
+
+app.use(session({
+  name: 'session-id',                   // giving the name
+  secret: '12345-67890-09876-54321',    // giving the secret key which will help to encrypt the data when the request is comming next time
+  saveUninitialized: false,    // 	If	true	it	forces	a	newly	created	session	without	any	modifications	to	be	saved	to	the	session	store.
+  resave: false,              //	If	true	forces	a	session	to	be	saved	back	to	store	even	if	it	was	not	modified	in	the	request
+  store: new FileStore() // so use new file store for the session
+}));
 
 
 // so here we will use the authentication 
@@ -47,9 +58,9 @@ app.use(cookieParser('12345-67890-09876-54321'));
 
 // => so here in this function we check the user is authenticated or not
 function auth(req, res, next){ // req, res, next are available as we connect to server
-  console.log(req.signedCookies); // so here we will info of signedCookies
+  console.log(req.session); // so here we will info of session
 
-  if(!req.signedCookies.user){ // so if the signed cookies having  not the user field means a cookie is not set then we will go for the basic authentication in if
+  if(!req.session.user){ // so if the session having  not the user field means a cookie is not set then we will go for the basic authentication in if
     console.log(req.headers); // printing all the information
 
     var authHeader = req.headers.authorization; // getting the authorization data from header
@@ -74,8 +85,9 @@ function auth(req, res, next){ // req, res, next are available as we connect to 
     var password = auth[1];
 
     if(username === 'admin' && password === 'password'){ // just dummy
-      // after user login we will set cookie and also we will set al signed cookie
-      res.cookie('user','admin', {signed: true}); 
+      // so here we set in the request user to admin so you notice 
+      // when we use signed cookies then we set res.cookie.user but in session we use req.session.user so it will help to set into the file storage and automatically set into the response localstorage
+      req.session.user = 'admin';   
       next(); // so using next now the request will go through next set of middleware
     }
     else{
@@ -87,8 +99,8 @@ function auth(req, res, next){ // req, res, next are available as we connect to 
     }
   }
   else{
-    // in if it will check the signed cookie value
-    if(req.signedCookies.user === "admin"){
+    // in if it will check the session value
+    if(req.session.user === "admin"){
       next();
     }else{
       var err = new Error('Your are not authenticated!');

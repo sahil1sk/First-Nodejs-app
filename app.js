@@ -35,6 +35,10 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// so here we will use the authentication 
+// before accesing any of the static file and api
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // this is built in routers

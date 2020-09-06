@@ -24,3 +24,7 @@ npm install mongoose@5.1.7 --save // for using mongoose ODM
 
 // for using mongoose currency (mongocurrency will help to store the currecy value)
 npm install mongoose-currency@0.2.0 --save  
+
+// in express generator cookie parsor is comming with it for install it on express normally use given command
+ npm install cookie-parser@1.4.3 --save
+ 

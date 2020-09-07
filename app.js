@@ -51,6 +51,11 @@ app.use(session({
 }));
 
 
+// this is built in routers
+app.use('/', indexRouter);
+app.use('/users', usersRouter); // so we modify this router
+
+
 // so here we will use the authentication 
 // before accesing any of the static file and api
 // so here befor going down at there using this line 
@@ -61,52 +66,19 @@ function auth(req, res, next){ // req, res, next are available as we connect to 
   console.log(req.session); // so here we will info of session
 
   if(!req.session.user){ // so if the session having  not the user field means a cookie is not set then we will go for the basic authentication in if
-    console.log(req.headers); // printing all the information
-
-    var authHeader = req.headers.authorization; // getting the authorization data from header
-    if(!authHeader){ // so if the header is null then we sent the error
-      var err = new Error('You are not authenticated!');
-
-      res.setHeader('WWW-Authenticate', 'Basic'); // setting the header that it is by authentication
-      err.status = 401; // 401 means not authenticated
-      return next(err); // so we will returning the error 
-    }
-
-    // so here we spliting the auth header string from space 
-    // for ex:- we have (Basic jklmkyuiop24kj) 
-    // when we split [1] this will split into the array [0] => will contain Basic and [1] => will contain base string
-    // we will get base64 encoded string that's we write base64
-    // after getting [1] which contain string we will then again split from : because it will contain username 
-    // and password in encrypt format and convert into array [0] => contain username [1] => contain password
-    // Remember : is not shown it is also in string encoded only with the help of Buffer we able to split it
-    var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':'); 
-
-    var username = auth[0];
-    var password = auth[1];
-
-    if(username === 'admin' && password === 'password'){ // just dummy
-      // so here we set in the request user to admin so you notice 
-      // when we use signed cookies then we set res.cookie.user but in session we use req.session.user so it will help to set into the file storage and automatically set into the response localstorage
-      req.session.user = 'admin';   
-      next(); // so using next now the request will go through next set of middleware
-    }
-    else{
-      var err = new Error('Your are not authenticated!');
-
-      res.setHeader('WWW-Authenticate', 'Basic'); // setting the header that it is by authentication
-      err.status = 401; // 401 means not authenticated
-      return next(err); // so we will returning the error var err = new Error('You are not authenticated');
-    }
+    var err = new Error('You are not authenticated!');
+    err.status = 403; // forbidden
+    return next(err); // so we will returning the error 
   }
   else{
-    // in if it will check the session value
-    if(req.session.user === "admin"){
+    // so you know in user router at login function we set the req.session.user to authenticated
+    if(req.session.user === "authenticated"){
       next();
     }else{
       var err = new Error('Your are not authenticated!');
 
       // so here we will not setHeader because this is set when the user at first time
-      err.status = 401; // 401 means not authenticated
+      err.status = 403; // 403 forbidden error
       return next(err); // so we will returning the error var err = new Error('You are not authenticated');     
     }
   }  
@@ -118,9 +90,6 @@ app.use(auth);  // so her we call the function
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// this is built in routers
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 // this is our own made routers
 app.use('/dishes', dishRouter);
 app.use('/leaders', leaderRouter);

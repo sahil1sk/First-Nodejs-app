@@ -33,3 +33,7 @@ npm install express-session@1.15.6 --save
 // so here we are installing express file store for storing the info of the express sessions
 npm install session-file-store@1.2.0 --save
 
+// ==> Installing Modules for using passport
+npm install passport@0.4.0 --save  				// installing for using passport
+npm intstall passport-local@1.0.0 --save        // installing for using local passport which make the local authentication easy
+npm install passport-local-mongoose@5.0.1 --save // mongoose passport is very smart it is supportive with mongoose schema automatically done all the stuff

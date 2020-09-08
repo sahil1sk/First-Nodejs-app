@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');   // cookie-parser is helps to read
 var logger = require('morgan');               // morgan helps to console log the data 
 var session  = require('express-session');    // so here we are importing the sesion parser
 var FileStore = require('session-file-store')(session)  // so here we are getting file storage for storing data of sessions
+var passport = require('passport');             // getting the passport module
+var authenticate = require('./authenticate');   // getting the authectiation strategy
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -50,6 +52,10 @@ app.use(session({
   store: new FileStore() // so use new file store for the session
 }));
 
+// so this middleware will set the user property which is session at request
+// so the further it is available in request for use
+app.use(passport.initialize());
+app.use(passport.session());
 
 // this is built in routers
 app.use('/', indexRouter);
@@ -63,24 +69,14 @@ app.use('/users', usersRouter); // so we modify this router
 
 // => so here in this function we check the user is authenticated or not
 function auth(req, res, next){ // req, res, next are available as we connect to server
-  console.log(req.session); // so here we will info of session
-
-  if(!req.session.user){ // so if the session having  not the user field means a cookie is not set then we will go for the basic authentication in if
+  
+  if(!req.user){ // so if the user is not exist in the request then show the error
     var err = new Error('You are not authenticated!');
     err.status = 403; // forbidden
     return next(err); // so we will returning the error 
   }
   else{
-    // so you know in user router at login function we set the req.session.user to authenticated
-    if(req.session.user === "authenticated"){
-      next();
-    }else{
-      var err = new Error('Your are not authenticated!');
-
-      // so here we will not setHeader because this is set when the user at first time
-      err.status = 403; // 403 forbidden error
-      return next(err); // so we will returning the error var err = new Error('You are not authenticated');     
-    }
+    next();
   }  
 
 };

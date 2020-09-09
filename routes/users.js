@@ -2,7 +2,7 @@ var express = require('express');
 const bodyParser = require('body-parser'); // getting body parser for reading the req body contect
 var User = require('../models/user');
 var passport = require('passport');   // getting the passport module
-
+var authenticate = require('../authenticate');
 
 var router = express.Router(); // getting the router
 router.use(bodyParser.json()); // so here we ask router to use body parser
@@ -36,9 +36,12 @@ router.post('/signup', (req, res, next) => {
 // we suppose that we will get password and username in the body not in the header
 // while authentication if there is any error then it will automatically send the error
 router.post('/login', passport.authenticate('local'), (req, res) => {
+  // so req.user is automatically present by middleware which we set in app.js file i.e passport intialize when the user is authenticated successfully
+  var token = authenticate.getToken({_id: req.user._id}); // here we generating the token by passing the user id
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
-  res.json({success: true, status: 'You are successfully logged in!'});
+                          // so here we send the token back which we created so that next time it will take token with ourself for login
+  res.json({success: true, token: token, status: 'You are successfully logged in!'});
 });
 
 router.get('/logout', (req, res) => {

@@ -37,3 +37,8 @@ npm install session-file-store@1.2.0 --save
 npm install passport@0.4.0 --save  				// installing for using passport
 npm intstall passport-local@1.0.0 --save        // installing for using local passport which make the local authentication easy
 npm install passport-local-mongoose@5.0.1 --save // mongoose passport is very smart it is supportive with mongoose schema automatically done all the stuff
+
+// ==> Install for using JWT 
+npm install jsonwebtoken@8.3.0 --save    // installing JWT
+npm install passport-jwt@4.0.0 --save    // install for using JWT with passport which provides many built in things
+

@@ -4,6 +4,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');   // getting the mongoose for using mongoose ODM
+const authenticate = require('../authenticate'); // getting the authenticate module
 
 const Dishes = require('../models/dishes'); // getting the Dishes model
 // so at the begining of the app.js we will connect with mongo database so there is no need to connect it again this will work
@@ -23,8 +24,8 @@ dishRouter.route('/')
         res.json(dishes);    // so res.json will help to send the json response
     }, (err) => next(err))    
     .catch((err) => next(err)) // next will help to send at the next so that it will handle at the global level                   
-})                              // sending the error which is handle by the app.js error handler globally
-.post((req, res, next) => {
+})   // so by giving authenticate.verifyUser we will set that the user must be authenticated before posting any data                               // sending the error which is handle by the app.js error handler globally
+.post(authenticate.verifyUser, (req, res, next) => {
     Dishes.create(req.body)     // inside the body we will send the dish which has to be created
     .then((dish) => {
         console.log('Dish Created', dish);
@@ -33,12 +34,12 @@ dishRouter.route('/')
         res.json(dish);    // so res.json will help to send the json response
     }, (err) => next(err))
     .catch((err) => next(err))
-})
-.put((req, res, next) => {
+})// so by giving authenticate.verifyUser we will set that the user must be authenticated before performing put
+.put(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('PUT operation not supoorted on /dishes');
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     Dishes.remove({})
     .then((resp) => {
         res.statusCode = 200;
@@ -59,12 +60,12 @@ dishRouter.route('/:dishId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('POST operation not supoorted on /dishes/' + 
             req.params.dishId);
 })
-.put((req, res, next) => {  
+.put(authenticate.verifyUser, (req, res, next) => {  
     // update the dish by it's id 
     // first we pass the id then send the update value and {new: true} means get the update data back
     Dishes.findByIdAndUpdate(req.params.dishId, {
@@ -77,7 +78,7 @@ dishRouter.route('/:dishId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     Dishes.findByIdAndRemove(req.params.dishId)  // so here we delete the dish by using it's id
     .then((resp) => {
         res.statusCode = 200;
@@ -105,7 +106,7 @@ dishRouter.route('/:dishId/comments')
     }, (err) => next(err))    
     .catch((err) => next(err)) // next will help to send at the next so that it will handle at the global level                   
 })  
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
     Dishes.findById(req.params.dishId)  // getting the dish with it's id
     .then((dish) => {
         if(dish !== null) {
@@ -124,11 +125,11 @@ dishRouter.route('/:dishId/comments')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.put((req, res, next) => {
+.put(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('PUT operation not supoorted on /dishes/'+req.params.dishId+'/comments');
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     Dishes.findById(req.params.dishId)  // getting the dish with it's id
     .then((dish) => {
         if(dish !== null) {
@@ -173,12 +174,12 @@ dishRouter.route('/:dishId/comments/:commentId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('POST operation not supoorted on /dishes/' + 
             req.params.dishId + '/comments/' + req.params.commentId);
 })
-.put((req, res, next) => {  
+.put(authenticate.verifyUser, (req, res, next) => {  
     Dishes.findById(req.params.dishId) // so here we find the dish by id and req.params.dishId having the id which will come with request
     .then((dish) => {   // so in if we check dish will exist but also in subdocument comment id also exists means comment also exists
         if(dish !== null && dish.comments.id(req.params.commentId) !== null) {
@@ -206,7 +207,7 @@ dishRouter.route('/:dishId/comments/:commentId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     Dishes.findById(req.params.dishId)  // getting the dish with it's id
     .then((dish) => {
         if(dish !== null && dish.comments.id(req.params.commentId) !== null) {

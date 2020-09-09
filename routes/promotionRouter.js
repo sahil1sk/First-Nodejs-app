@@ -4,6 +4,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');   // getting the mongoose for using mongoose ODM
+const authenticate = require('../authenticate'); // getting the authenticate module
 
 const Promotions = require('../models/promotions'); // getting the Promotions model
 // so at the begining of the app.js we will connect with mongo database so there is no need to connect it again this will work
@@ -25,8 +26,8 @@ promotionRouter.route('/')
         res.json(promotions);    // so res.json will help to send the json response
     }, (err) => next(err))    
     .catch((err) => next(err)) // next will help to send at the next so that it will handle at the global level                   
-})                              // sending the error which is handle by the app.js error handler globally
-.post((req, res, next) => {
+})// so by giving authenticate.verifyUser we will set that the user must be authenticated before posting any data                              // sending the error which is handle by the app.js error handler globally
+.post(authenticate.verifyUser, (req, res, next) => {
     Promotions.create(req.body)     // inside the body we will send the dish which has to be created
     .then((promotions) => {
         console.log('Promotion Created', promotions);
@@ -36,11 +37,11 @@ promotionRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.put((req, res, next) => {
+.put(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('PUT operation not supoorted on /promotions');
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     Promotions.remove({})
     .then((resp) => {
         res.statusCode = 200;
@@ -62,12 +63,12 @@ promotionRouter.route('/:promotionId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('POST operation not supoorted on /promotions/' + 
             req.params.promotionId);
 })
-.put((req, res, next) => {  
+.put(authenticate.verifyUser, (req, res, next) => {  
     // update the dish by it's id 
     // first we pass the id then send the update value and {new: true} means get the update data back
     Promotions.findByIdAndUpdate(req.params.promotionId, {
@@ -80,7 +81,7 @@ promotionRouter.route('/:promotionId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     Promotions.findByIdAndRemove(req.params.promotionId)  // so here we delete the dish by using it's id
     .then((resp) => {
         res.statusCode = 200;

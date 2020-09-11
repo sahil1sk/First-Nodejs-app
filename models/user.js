@@ -4,6 +4,14 @@ var Schema = mongoose.Schema;          // creating the Schema constant
 var passportLocalMongoose = require('passport-local-mongoose'); // getting the variable of passport-local-mngoose read README File
 
 var User = new Schema({
+    firstname: {
+        type: String,
+        default: ''
+    },
+    lastname: {
+        type: String,
+        default: ''
+    }, 
     admin: {
         type: Boolean,
         default: false

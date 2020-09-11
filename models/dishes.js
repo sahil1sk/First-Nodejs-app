@@ -18,8 +18,8 @@ const commentSchema = new Schema({
         required: true,
     }, 
     author:{
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId, // setting up the object id for populating the author data when require
+        ref: 'User'         // so setting the reference of user model which means this will contain user id
     }
 },{
     timestamps: true

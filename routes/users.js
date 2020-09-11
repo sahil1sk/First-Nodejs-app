@@ -24,10 +24,20 @@ router.post('/signup', (req, res, next) => {
       res.json({err: err});
     }
     else { // if no any error then authenticate the user with local passport
-      passport.authenticate('local')(req, res, () => {  //we export the authenticate.js file in app.js so it is available in whole code so this ('local') will automatically export the authentication strategy which we describe authenticate.js
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({success: true, status: 'Registration Successful!'});
+      if(req.body.firstname) user.firstname = req.body.firstname;
+      if(req.body.lastname) user.lastname = req.body.lastname;
+      user.save((err, user) => {
+        if(err){
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({err: err});
+          return ;
+        }
+        passport.authenticate('local')(req, res, () => {  //we export the authenticate.js file in app.js so it is available in whole code so this ('local') will automatically export the authentication strategy which we describe authenticate.js
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({success: true, status: 'Registration Successful!'});
+        });
       });
     }
   });

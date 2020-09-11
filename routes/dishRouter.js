@@ -18,6 +18,7 @@ dishRouter.use(bodyParser.json()); // for getting the body data we use bodyParse
 dishRouter.route('/')
 .get((req, res, next) => {
     Dishes.find({})
+    .populate('comments.author') // so here we set the build in funtion we send that to populate the user info
     .then((dishes) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -25,6 +26,7 @@ dishRouter.route('/')
     }, (err) => next(err))    
     .catch((err) => next(err)) // next will help to send at the next so that it will handle at the global level                   
 })   // so by giving authenticate.verifyUser we will set that the user must be authenticated before posting any data                               // sending the error which is handle by the app.js error handler globally
+
 .post(authenticate.verifyUser, (req, res, next) => {
     Dishes.create(req.body)     // inside the body we will send the dish which has to be created
     .then((dish) => {
@@ -53,6 +55,7 @@ dishRouter.route('/')
 dishRouter.route('/:dishId')
 .get((req, res, next) => {
     Dishes.findById(req.params.dishId) // so here we find the dish by id and req.params.dishId having the id which will come with request
+    .populate('comments.author')
     .then((dish) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -93,6 +96,7 @@ dishRouter.route('/:dishId')
 dishRouter.route('/:dishId/comments')
 .get((req, res, next) => {
     Dishes.findById(req.params.dishId)  // getting the dish with it's id
+    .populate('comments.author')
     .then((dish) => {
         if(dish !== null) {
             res.statusCode = 200;
@@ -109,13 +113,18 @@ dishRouter.route('/:dishId/comments')
 .post(authenticate.verifyUser, (req, res, next) => {
     Dishes.findById(req.params.dishId)  // getting the dish with it's id
     .then((dish) => {
-        if(dish !== null) {
+        if(dish !== null) {  // req.user._id we will get when we properly authenticate then it will set by the passport on the request
+            req.body.author = req.user._id; // so here we setting up the author field in the body for author field for comment which will help to populate the data
             dish.comments.push(req.body); // so here body of the message contains all the messages so that's why we push it
             dish.save()       // so we saving the changes
             .then((dish) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish);    // so res.json will help to send the json response  
+                Dishes.findById(dish._id) // there we do find because for populate the data
+                    .populate('comments.author')   // so here we populate the user data while sending back the comment
+                    .then((dish) => {
+                        res.statusCode = 200;
+                        res.setHeader('Content-Type', 'application/json');
+                        res.json(dish);    // so res.json will help to send the json response
+                    })  
             }, (err) => next(err))  //if there is an error so it will send the error which is handle globally
         }else{
             err = new Error("Dish " + req.params.dishId + " not found"); // creating the new error
@@ -156,6 +165,7 @@ dishRouter.route('/:dishId/comments')
 dishRouter.route('/:dishId/comments/:commentId')
 .get((req, res, next) => {
     Dishes.findById(req.params.dishId) // so here we find the dish by id and req.params.dishId having the id which will come with request
+    .populate('comments.author')
     .then((dish) => {   // so in if we check dish will exist but also in subdocument comment id also exists means comment also exists
         if(dish !== null && dish.comments.id(req.params.commentId) !== null ) {
             res.statusCode = 200;
@@ -191,9 +201,13 @@ dishRouter.route('/:dishId/comments/:commentId')
             }
             dish.save()       // so we saving the changes
             .then((dish) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish);    // so res.json will help to send the json response  
+                Dishes.findById(dish._id)  // there we do find because for populate the data
+                .populate('comments.author') // so here we populate the author data before sending the updated comment
+                .then((dish) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(dish);    // so res.json will help to send the json response  
+                })
             }, (err) => next(err))  // if there is an error so it will send the error which is handle globally 
         }else if(dish === null){
             err = new Error("Dish " + req.params.dishId + " not found"); // creating the new error
@@ -215,9 +229,13 @@ dishRouter.route('/:dishId/comments/:commentId')
             dish.comments.id(req.params.commentId).remove(); // so here we removing all the comments one by one
             dish.save()       // so we saving the changes
             .then((dish) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish);    // so res.json will help to send the json response  
+                Dishes.findById(dish._id)  // there we do find because for populate the data
+                .populate('comments.author') // so here we populate the author data before sending the updated comment
+                .then((dish) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(dish);    // so res.json will help to send the json response  
+                })
             },(err) => next(err))  // so here we send the error to handle globally if there is an error while saving
         }else if(dish === null){
             err = new Error("Dish " + req.params.dishId + " not found"); // creating the new error

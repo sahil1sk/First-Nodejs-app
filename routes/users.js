@@ -2,15 +2,22 @@ var express = require('express');
 const bodyParser = require('body-parser'); // getting body parser for reading the req body contect
 var User = require('../models/user');
 var passport = require('passport');   // getting the passport module
-var authenticate = require('../authenticate');
+var authenticate = require('../authenticate'); // authenticate we use here for getting token and for checking admin
 
 var router = express.Router(); // getting the router
 router.use(bodyParser.json()); // so here we ask router to use body parser
 
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
+  User.find({})
+    .populate('comments.author') // so here we set the build in funtion we send that to populate the user info
+    .then((users) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(users);    // so res.json will help to send the json response
+    }, (err) => next(err))    
+    .catch((err) => next(err)) // next will help to send at the next so that it will handle at the global level                  
 });
 
 

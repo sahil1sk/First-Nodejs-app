@@ -31,7 +31,7 @@ opts.secretOrKey = config.secretKey;                            // so this is th
 exports.jwtPassport = passport.use(new JwtStrategy(opts, 
     (jwt_payload, done) => {
         console.log("JWT payload", jwt_payload);
-        User.findOne({_id: jwt_payload._id}, (err, user) => { // jwt_payload._id contains the id so using that we will trying to find the user from the database
+        User.findOne({_id: jwt_payload._id}, (err, user) => { // jwt_payload._id contains the user id so using that we will trying to find the user from the database
             if(err){
                 return done(err, false); // this containe three params error user and info, info is optional and we have no user the we pass false
             }else if (user){ // if use exists
@@ -47,5 +47,13 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
 // so here we using the jwt stretgy for verify the user which we configured above it will automatically use the strategy
 exports.verifyUser = passport.authenticate('jwt', {session: false}) // we are not creating session so set it false
 
-
+exports.verifyAdmin = (req, res, next) =>{
+    if(req.user.admin){
+        return next();
+    }else{
+        err = new Error("You are not authenticated to perform this operation"); // creating the new error
+        err.status = 403; // giving the status code not authenticated
+        return next(err)  // sending the error which is handle by the app.js error handler globally
+    }
+};
 

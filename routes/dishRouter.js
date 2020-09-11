@@ -26,8 +26,7 @@ dishRouter.route('/')
     }, (err) => next(err))    
     .catch((err) => next(err)) // next will help to send at the next so that it will handle at the global level                   
 })   // so by giving authenticate.verifyUser we will set that the user must be authenticated before posting any data                               // sending the error which is handle by the app.js error handler globally
-
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {  // this operation is for admin only
     Dishes.create(req.body)     // inside the body we will send the dish which has to be created
     .then((dish) => {
         console.log('Dish Created', dish);
@@ -37,11 +36,11 @@ dishRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err))
 })// so by giving authenticate.verifyUser we will set that the user must be authenticated before performing put
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('PUT operation not supoorted on /dishes');
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => { 
     Dishes.remove({})
     .then((resp) => {
         res.statusCode = 200;
@@ -63,12 +62,12 @@ dishRouter.route('/:dishId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('POST operation not supoorted on /dishes/' + 
             req.params.dishId);
 })
-.put(authenticate.verifyUser, (req, res, next) => {  
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {  
     // update the dish by it's id 
     // first we pass the id then send the update value and {new: true} means get the update data back
     Dishes.findByIdAndUpdate(req.params.dishId, {
@@ -81,7 +80,7 @@ dishRouter.route('/:dishId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Dishes.findByIdAndRemove(req.params.dishId)  // so here we delete the dish by using it's id
     .then((resp) => {
         res.statusCode = 200;
@@ -110,7 +109,7 @@ dishRouter.route('/:dishId/comments')
     }, (err) => next(err))    
     .catch((err) => next(err)) // next will help to send at the next so that it will handle at the global level                   
 })  
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(authenticate.verifyUser,(req, res, next) => {
     Dishes.findById(req.params.dishId)  // getting the dish with it's id
     .then((dish) => {
         if(dish !== null) {  // req.user._id we will get when we properly authenticate then it will set by the passport on the request
@@ -138,7 +137,7 @@ dishRouter.route('/:dishId/comments')
     res.statusCode = 403;   // 403 means not supported
     res.end('PUT operation not supoorted on /dishes/'+req.params.dishId+'/comments');
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Dishes.findById(req.params.dishId)  // getting the dish with it's id
     .then((dish) => {
         if(dish !== null) {
@@ -193,6 +192,13 @@ dishRouter.route('/:dishId/comments/:commentId')
     Dishes.findById(req.params.dishId) // so here we find the dish by id and req.params.dishId having the id which will come with request
     .then((dish) => {   // so in if we check dish will exist but also in subdocument comment id also exists means comment also exists
         if(dish !== null && dish.comments.id(req.params.commentId) !== null) {
+            
+            if(String(dish.comments.id(req.params.commentId).author._id) !== String(req.user._id)){
+                err = new Error("You are not authorized to update this comment"); // creating the new error
+                err.status = 403; // giving the status code of not authorized
+                return next(err);  // sending the error which is handle by the app.js error handler globally
+            }
+    
             if(req.body.rating){ //if there is rating in body so only allow to change rating
                 dish.comments.id(req.params.commentId).rating = req.body.rating; // updating the rating of the comment through specific id
             }
@@ -208,7 +214,7 @@ dishRouter.route('/:dishId/comments/:commentId')
                     res.setHeader('Content-Type', 'application/json');
                     res.json(dish);    // so res.json will help to send the json response  
                 })
-            }, (err) => next(err))  // if there is an error so it will send the error which is handle globally 
+            }, (err) => next(err))  // if there is an error so it will send the error which is handle globally     
         }else if(dish === null){
             err = new Error("Dish " + req.params.dishId + " not found"); // creating the new error
             err.statusCode = 404; // giving the status code not found
@@ -225,6 +231,13 @@ dishRouter.route('/:dishId/comments/:commentId')
     Dishes.findById(req.params.dishId)  // getting the dish with it's id
     .then((dish) => {
         if(dish !== null && dish.comments.id(req.params.commentId) !== null) {
+            
+            if(String(dish.comments.id(req.params.commentId).author._id) !== String(req.user._id)){
+                err = new Error("You are not authorized to update this comment"); // creating the new error
+                err.status = 403; // giving the status code of not authorized
+                return next(err);  // sending the error which is handle by the app.js error handler globally
+            }
+            
             // getting the id of the comments using subdocument comments.id
             dish.comments.id(req.params.commentId).remove(); // so here we removing all the comments one by one
             dish.save()       // so we saving the changes
@@ -237,6 +250,7 @@ dishRouter.route('/:dishId/comments/:commentId')
                     res.json(dish);    // so res.json will help to send the json response  
                 })
             },(err) => next(err))  // so here we send the error to handle globally if there is an error while saving
+        
         }else if(dish === null){
             err = new Error("Dish " + req.params.dishId + " not found"); // creating the new error
             err.statusCode = 404; // giving the status code not found

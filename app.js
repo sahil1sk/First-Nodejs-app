@@ -40,7 +40,6 @@ app.use(logger('dev'));
 app.use(express.json());                           // with the help of this we are able to send the json data
 app.use(express.urlencoded({ extended: false }));
 
-
 // so this middleware will set the user property which is session at request
 // so the further it is available in request for use
 app.use(passport.initialize());
@@ -48,7 +47,6 @@ app.use(passport.initialize());
 // this is built in routers
 app.use('/', indexRouter);
 app.use('/users', usersRouter); // so we modify this router
-
 
 app.use(express.static(path.join(__dirname, 'public')));
 

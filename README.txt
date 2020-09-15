@@ -42,3 +42,7 @@ npm install passport-local-mongoose@5.0.1 --save // mongoose passport is very sm
 npm install jsonwebtoken@8.3.0 --save    // installing JWT
 npm install passport-jwt@4.0.0 --save    // install for using JWT with passport which provides many built in things
 
+// ==> Installing Multer which will help to uploading files
+npm install multer@1.2.1 --save
+
+

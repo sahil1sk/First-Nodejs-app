@@ -45,4 +45,6 @@ npm install passport-jwt@4.0.0 --save    // install for using JWT with passport 
 // ==> Installing Multer which will help to uploading files
 npm install multer@1.2.1 --save
 
+// ==> Installing cors Module
+npm install cors@2.8.4 --save // cors module
 

@@ -5,6 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');   // getting the mongoose for using mongoose ODM
 const authenticate = require('../authenticate'); // getting the authenticate module
+const cors = require('./cors');           // getting the cors 
 
 const Promotions = require('../models/promotions'); // getting the Promotions model
 // so at the begining of the app.js we will connect with mongo database so there is no need to connect it again this will work
@@ -18,7 +19,8 @@ const promotionRouter = express.Router();
 promotionRouter.use(bodyParser.json());
 
 promotionRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => {res.statusCode(200)})  // so client will first send the req to check which methods are allowed to him on this route and according to it's his host we check it's origin from that we will send the option which are allowed to him 
+.get(cors.cors, (req, res, next) => {
     Promotions.find({})
     .then((promotions) => {
         res.statusCode = 200;
@@ -27,7 +29,7 @@ promotionRouter.route('/')
     }, (err) => next(err))    
     .catch((err) => next(err)) // next will help to send at the next so that it will handle at the global level                   
 })// so by giving authenticate.verifyUser we will set that the user must be authenticated before posting any data                              // sending the error which is handle by the app.js error handler globally
-.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotions.create(req.body)     // inside the body we will send the dish which has to be created
     .then((promotions) => {
         console.log('Promotion Created', promotions);
@@ -37,11 +39,11 @@ promotionRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('PUT operation not supoorted on /promotions');
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Promotions.remove({})
     .then((resp) => {
         res.statusCode = 200;
@@ -54,7 +56,8 @@ promotionRouter.route('/')
 
 // this is for specific promotions
 promotionRouter.route('/:promotionId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => {res.statusCode(200)})  // so client will first send the req to check which host are allowed and then send the original req so we will send status code 200 when client will send options preflight
+.get(cors.cors, (req, res, next) => {
     Promotions.findById(req.params.promotionId) // so here we find the dish by id and req.params.dishId having the id which will come with request
     .then((promotion) => {
         res.statusCode = 200;
@@ -63,12 +66,12 @@ promotionRouter.route('/:promotionId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;   // 403 means not supported
     res.end('POST operation not supoorted on /promotions/' + 
             req.params.promotionId);
 })
-.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {  
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {  
     // update the dish by it's id 
     // first we pass the id then send the update value and {new: true} means get the update data back
     Promotions.findByIdAndUpdate(req.params.promotionId, {
@@ -81,7 +84,7 @@ promotionRouter.route('/:promotionId')
     }, (err) => next(err))
     .catch((err) => next(err))
 })
-.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotions.findByIdAndRemove(req.params.promotionId)  // so here we delete the dish by using it's id
     .then((resp) => {
         res.statusCode = 200;

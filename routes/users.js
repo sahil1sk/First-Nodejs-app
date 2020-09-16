@@ -3,13 +3,14 @@ const bodyParser = require('body-parser'); // getting body parser for reading th
 var User = require('../models/user');
 var passport = require('passport');   // getting the passport module
 var authenticate = require('../authenticate'); // authenticate we use here for getting token and for checking admin
+var cors = require('./cors');
 
 var router = express.Router(); // getting the router
 router.use(bodyParser.json()); // so here we ask router to use body parser
 
 
 /* GET users listing. */
-router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
+router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
   User.find({})
     .populate('comments.author') // so here we set the build in funtion we send that to populate the user info
     .then((users) => {
@@ -22,7 +23,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function(req,
 
 
 // the register method is available by the user plugin by passport-local-mongoose which we set up in user model
-router.post('/signup', (req, res, next) => {
+router.post('/signup', cors.corsWithOptions, (req, res, next) => {
   User.register(new User({username: req.body.username}), // in this we passing the new username, password and getting the callback
     req.body.password, (err, user) => {
     if(err) { // if error then show the error
@@ -52,7 +53,7 @@ router.post('/signup', (req, res, next) => {
 
 // we suppose that we will get password and username in the body not in the header
 // while authentication if there is any error then it will automatically send the error
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
   // so req.user is automatically present by middleware which we set in app.js file i.e passport intialize when the user is authenticated successfully
   var token = authenticate.getToken({_id: req.user._id}); // here we generating the token by passing the user id
   res.statusCode = 200;
@@ -61,7 +62,7 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
   res.json({success: true, token: token, status: 'You are successfully logged in!'});
 });
 
-router.get('/logout', (req, res) => {
+router.get('/logout', cors.corsWithOptions, (req, res) => {
   if(req.session){
     req.session.destroy();          // so here we destroy the session from our server side means from our file storage system
     res.clearCookie('session-id'); // here we clear the session cookie from the client side which is generated automatically when we adding session

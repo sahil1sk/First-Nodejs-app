@@ -74,5 +74,17 @@ router.get('/logout', cors.corsWithOptions, (req, res) => {
   }
 });
 
+// making the router for facebook token 
+// here we setting up the facebook strategy in and we will get the call back
+router.get('/facebook/token', cors.corsWithOptions, passport.authenticate('facebook-token'), (req, res) => {
+  if(req.user){ // so as we know if the facebook strategy will completed successfully then we will get the user in the request
+    var token = authenticate.getToken({_id: req.user._id}); // here we generating the token by passing the user id
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+                          // so here we send the token back which we created so that next time it will take token with ourself for login
+    res.json({success: true, token: token, status: 'You are successfully logged in!'});    
+  }
+});
+
 
 module.exports = router;

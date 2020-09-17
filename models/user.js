@@ -11,7 +11,8 @@ var User = new Schema({
     lastname: {
         type: String,
         default: ''
-    }, 
+    },
+    facebookId: String, // this is for storing facebook id it will set nothing when we not use any parameter and it's defualt value will be nothing
     admin: {
         type: Boolean,
         default: false

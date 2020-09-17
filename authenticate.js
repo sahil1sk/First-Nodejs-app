@@ -1,10 +1,11 @@
-// ==> so we use this file for store the authentication strategy which we configure
+// ==> so we use this file for store the authentication strategy which we configure // stragtegies are automatically call when we use them
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy; // getting the local strategy from the passport-local
 var User = require('./models/user');
 var JwtStrategy = require('passport-jwt').Strategy;  // so this will provide us  the jwt strategies
 var ExtractJwt = require('passport-jwt').ExtractJwt;  // import for extracting the jwt
 var jwt = require('jsonwebtoken');    // getting the jsonwebtoken module
+var FacebookTokenStrategy = require('passport-facebook-token'); // getiing the facebook module
 
 var config = require('./config');   // getting  config file data
 
@@ -56,4 +57,33 @@ exports.verifyAdmin = (req, res, next) =>{
         return next(err)  // sending the error which is handle by the app.js error handler globally
     }
 };
+
+// => All Social Authentication https://mherman.org/blog/social-authentication-with-passport-dot-js/
+
+// so here we make the facebook token strategy
+// so here in this strategy we pass two parameters first is clientId and clientSecret and second we will get the callback function
+exports.facebookPassport = passport.use(new FacebookTokenStrategy({
+        clientID: config.facebook.clientId,
+        clientSecret: config.facebook.clientSecret
+    }, (accessToken, refreshToken, profile, done) => {
+        // so here we will trying to check the facebook id is already exists or not
+        User.findOne({facebookId: profile.id}, (err, user) => {
+            if(err) return done(err, false);           // if there is an error we will return the error
+            if(!err && user !== null) return done(null, user); // if there is an user exists we will return that user
+            else {     // if no user exists then we create the user
+                // there is no need to set password for this because the user will come through facebook path
+                user = new User({ username: profile.displayName});
+                user.facebookId = profile.id;
+                user.firstname = profile.name.givenName;
+                user.lastname = profile.name.familyName;
+
+                // so here we saving info after adding data and it will give a callback
+                user.save((err, user) => {
+                    if(err) return done(err, false); // return if there is an error
+                    else return done(null, user);   //  return when user created successfully
+                });
+            }
+        });
+    }    
+));
 

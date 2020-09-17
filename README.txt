@@ -48,3 +48,10 @@ npm install multer@1.2.1 --save
 // ==> Installing cors Module
 npm install cors@2.8.4 --save // cors module
 
+// => Installation the facebook passport module
+npm install passport-facebook-token --save  // facebook passport module
+
+// => Multer => https://github.com/expressjs/multer             // => For Multiple file uploading
+// => All Social Authentication https://mherman.org/blog/social-authentication-with-passport-dot-js/
+
+

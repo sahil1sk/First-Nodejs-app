@@ -20,7 +20,7 @@ passport.deserializeUser(User.deserializeUser());   // this will deserialize the
 // helps to gererate the jwt token
 exports.getToken = function(user){             // need to pass the user unique info to create the token
     return jwt.sign(user, config.secretKey,  // it will take 3 parameters to generate jwt first user , then secret key and then expiry date
-        {expiresIn: 3600});
+        {expiresIn: 7200});
 };
 
 // creating the options to extract the token method

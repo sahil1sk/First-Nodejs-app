@@ -15,6 +15,7 @@ var dishRouter = require('./routes/dishRouter'); // importing the dish router mo
 var leaderRouter = require('./routes/leaderRouter');
 var promotionRouter = require('./routes/promotionRouter');
 var uploadRouter = require('./routes/uploadRouter'); // for uploading files
+var favouriteRouter = require('./routes/favouriteRouter');
 
 // Getting the mongoose ODM 
 const mongoose = require('mongoose');
@@ -56,6 +57,7 @@ app.use('/dishes', dishRouter);
 app.use('/leaders', leaderRouter);
 app.use('/promotions', promotionRouter);
 app.use('/imageUpload', uploadRouter);
+app.use('/favourites', favouriteRouter);
 
 
 // catch 404 and forward to error handler

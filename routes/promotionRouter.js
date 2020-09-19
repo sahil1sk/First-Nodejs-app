@@ -10,8 +10,6 @@ const cors = require('./cors');           // getting the cors
 const Promotions = require('../models/promotions'); // getting the Promotions model
 // so at the begining of the app.js we will connect with mongo database so there is no need to connect it again this will work
 
-
-
 // so here we declare promotionRouter as express router
 const promotionRouter = express.Router();
 
@@ -21,7 +19,7 @@ promotionRouter.use(bodyParser.json());
 promotionRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => {res.statusCode(200)})  // so client will first send the req to check which methods are allowed to him on this route and according to it's his host we check it's origin from that we will send the option which are allowed to him 
 .get(cors.cors, (req, res, next) => {
-    Promotions.find({})
+    Promotions.find(req.query)        // req.query means /?freatured=true this will come in query like {"featured":"true"}
     .then((promotions) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');

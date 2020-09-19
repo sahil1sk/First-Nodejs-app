@@ -5,26 +5,6 @@ const Schema = mongoose.Schema;
 require('mongoose-currency').loadType(mongoose); // so here we load the currecy type into the mongoose
 const Currency = mongoose.Types.Currency; // so here we get the currecy of const
 
-// ==> Creating the comment schema
-const commentSchema = new Schema({
-    rating:{
-        type: Number, // defining the type
-        min: 1,
-        max: 5,
-        required: true,
-    },
-    comment:{
-        type: String,
-        required: true,
-    }, 
-    author:{
-        type: mongoose.Schema.Types.ObjectId, // setting up the object id for populating the author data when require
-        ref: 'User'         // so setting the reference of user model which means this will contain user id
-    }
-},{
-    timestamps: true
-});
-
 const dishSchema = new Schema({
     name: {
         type: String,          
@@ -55,8 +35,7 @@ const dishSchema = new Schema({
     featured:{
         type: Boolean,
         default: false
-    },
-    comments: [ commentSchema ] 
+    }
 },{     
     timestamps: true    
 });

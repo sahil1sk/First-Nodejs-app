@@ -10,6 +10,8 @@ router.use(bodyParser.json()); // so here we ask router to use body parser
 
 
 /* GET users listing. */
+// if any option request will come then it will send the appropriate response
+router.options('*', cors.corsWithOptions, (req, res) => {res.sendStatus(200);})
 router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
   User.find({})
     .populate('comments.author') // so here we set the build in funtion we send that to populate the user info
@@ -53,14 +55,55 @@ router.post('/signup', cors.corsWithOptions, (req, res, next) => {
 
 // we suppose that we will get password and username in the body not in the header
 // while authentication if there is any error then it will automatically send the error
-router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
-  // so req.user is automatically present by middleware which we set in app.js file i.e passport intialize when the user is authenticated successfully
-  var token = authenticate.getToken({_id: req.user._id}); // here we generating the token by passing the user id
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'application/json');
-                          // so here we send the token back which we created so that next time it will take token with ourself for login
-  res.json({success: true, token: token, status: 'You are successfully logged in!'});
+router.post('/login', cors.corsWithOptions, (req, res, next) => {
+
+  // err will be the genune error means any processing error and info will contain the info if the user doesn't exists and user if exists
+  passport.authenticate('local', (err, user, info) => {
+    if(err) return next(err);
+
+    if(!user){    // if the username or password is not exists then we get null 
+      res.statusCode = 401; // unauthorized
+      res.setHeader('Content-Type', 'application/json');
+      res.json({success: false,  status: 'Login Unsuccessful', err:info}); // so here we passing info means user not exists
+    }
+
+    // if there is no error and having user then we do login using built in function which we doing below
+    req.login(user, (err) => {
+      if(err){ // if password is incorrect then we will get error here
+        res.statusCode = 401; // unauthorized
+        res.setHeader('Content-Type', 'application/json');
+        res.json({success: false,  status: 'Login Unsuccessful', err:'Could not log in user'}); // so here we passing info means user not exists        
+      }
+      // so if we successfully logged in then we come to this point
+
+      // so req.user is automatically present by middleware which we set in app.js file i.e passport intialize when the user is authenticated successfully
+      var token = authenticate.getToken({_id: req.user._id}); // here we generating the token by passing the user id
+      res.statusCode = 200; // ok
+      res.setHeader('Content-Type', 'application/json');
+      res.json({success: true,  status: 'Login Successfull', token:token}); // sending the token back
+    });
+
+  }) (req, res, next); // so here we passing req res next this is the structure we have to follow while passing specific information  
 });
+
+// for checking the token is expired or not // so here we authenticate with jwt strategy not local strategy
+router.get('/checkJWTToken', cors.corsWithOptions, (req, res) => {
+  passport.authenticate('jwt', {session: false}, (err, user, info) => {
+    if(err) return next(err);
+    
+    if(!user){   // if username or password is not exists or incorrect
+      res.statusCode = 401; // unauthorized
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({status: 'JWT ivalid!', success:false, err:info})
+    }else{
+      res.statusCode = 200; 
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({status: 'JWTvalid!', success:true, user:user})
+    }
+
+  }) (req, res); // here we supply the data to strategy as we do in login process
+})
+
 
 router.get('/logout', cors.corsWithOptions, (req, res) => {
   if(req.session){

@@ -50,9 +50,15 @@ favouriteRouter.route('/')
             
             favData.save()       // so we saving the changes
             .then((allData) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(allData);    // so res.json will help to send the json response  
+                Favourites.findById(allData._id)
+                .populate('user')
+                .populate('dishes')
+                .then((favourites) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(favourites);    // so res.json will help to send the json response  
+                })
+                
             }, (err) => next(err))  //if there is an error so it will send the error which is handle globally
             .catch((err) => next(err))
 
@@ -64,9 +70,14 @@ favouriteRouter.route('/')
             }
             Favourites.create(newData)     // inside the body we will send the dish which has to be created
             .then((allData) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(allData);    // so res.json will help to send the json response
+                Favourites.findById(allData._id)
+                .populate('user')
+                .populate('dishes')
+                .then((favourites) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(favourites);    // so res.json will help to send the json response  
+                })
             }, (err) => next(err))
             .catch((err) => next(err)) 
         } 
@@ -94,6 +105,34 @@ favouriteRouter.route('/')
 });
 
 
+favouriteRouter.get('/:dishId', cors.corsWithOptions, authenticate.verifyUser,  function(req, res, next) {
+    Favourites.findOne({user: req.user._id})
+    .then((favourites) => {
+        if(!favourites) {    // if not having favourites
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            return res.json({"exists":false, "favourites":favourites})
+        }else{
+            if(favourites.dishes.indexOf(req.params.dishId) < 0 ){ // checking the specific dish exists or not
+                res.statusCode = 200;
+                res.setHeader('Content-Type','application/json');
+                return res.json({"exists":false, "favourites":favourites})
+            }else{
+                res.statusCode = 200;
+                res.setHeader('Content-Type','application/json');
+                return res.json({"exists":true, "favourites":favourites})
+            }
+        } 
+    }, (err) => next(err))
+    .catch((err) => next(err))
+});
+
+
+favouriteRouter.put('/:dishId',cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
+    res.statusCode = 403;   // 403 means not supported
+    res.end('PUT operation not supoorted on /dishes');
+})
+
 /* posting the new fav dish */
 favouriteRouter.post('/:dishId', cors.corsWithOptions, authenticate.verifyUser,  function(req, res, next) {
     var ObjectId = mongoose.Types.ObjectId; // helps to setup the object id
@@ -116,9 +155,14 @@ favouriteRouter.post('/:dishId', cors.corsWithOptions, authenticate.verifyUser, 
                     
             favData.save()       // so we saving the changes
             .then((allData) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(allData);    // so res.json will help to send the json response  
+                Favourites.findById(allData._id)
+                .populate('user')
+                .populate('dishes')
+                .then((favourites) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(favourites);    // so res.json will help to send the json response  
+                }) 
             }, (err) => next(err))  //if there is an error so it will send the error which is handle globally
             .catch((err) => next(err))
 
@@ -129,9 +173,14 @@ favouriteRouter.post('/:dishId', cors.corsWithOptions, authenticate.verifyUser, 
             }
             Favourites.create(newData)     // inside the body we will send the dish which has to be created
             .then((allData) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(allData);    // so res.json will help to send the json response
+                Favourites.findById(allData._id)
+                .populate('user')
+                .populate('dishes')
+                .then((favourites) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(favourites);    // so res.json will help to send the json response  
+                })
             }, (err) => next(err))
             .catch((err) => next(err)) 
         } 
@@ -159,10 +208,14 @@ favouriteRouter.delete('/:dishId', cors.corsWithOptions, authenticate.verifyUser
 
             favDishes.save()
             .then((DishData) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(DishData);    // so res.json will help to send the json response  
-                
+                Favourites.findById(DishData._id)
+                .populate('user')
+                .populate('dishes')
+                .then((favourites) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(favourites);    // so res.json will help to send the json response  
+                })                
             },(err) => next(err))  // so here we send the error to handle globally if there is an error while saving
             .catch((err) => next(err))
         }, (err) => next(err))

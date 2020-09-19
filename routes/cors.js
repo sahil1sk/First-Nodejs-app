@@ -4,9 +4,9 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-
+// this server is running on 3001
 // the white list will contain all the origin that the server will accept
-const whitelist = ['http://localhost:3000','https://localhost:3443']; 
+const whitelist = ['http://localhost:3000','https://localhost:3443','http://hp/3001']; 
 
 // making the function that will check the req origin is present in whitelist or not
 var corsOptionsDelegate = (req, callback) => {

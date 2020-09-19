@@ -20,7 +20,7 @@ leaderRouter.use(bodyParser.json());
 leaderRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => {res.statusCode(200)})  // so client will first send the req to check which methods are allowed to him on this route and according to it's his host we check it's origin from that we will send the option which are allowed to him 
 .get(cors.cors, (req, res, next) => {
-    Leaders.find({})
+    Leaders.find(req.query)        // req.query means /?freatured=true this will come in query like {"featured":"true"}
     .then((leaders) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
